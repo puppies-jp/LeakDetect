@@ -5,7 +5,7 @@ project(test_cmake CXX)
 
 message("[cmake start]--------------------------------------")
 # option追加
-add_definitions("-Wall -std=c++20 -fPIC -rdynamic -ldl")
+add_definitions("-Wall -std=c++2a -fPIC -rdynamic -ldl")
 
 
 add_library(Manager SHARED 
