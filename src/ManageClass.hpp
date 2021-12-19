@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef MMANAGER
+#define MMANAGER
+
 #include <iostream>
 #include <map>
 
@@ -18,3 +21,5 @@ namespace MemManage
     };
     pManager _pManager;
 }
+
+#endif

@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "ManageClass.hpp"
+#include "AddrConfilm.hpp"
 
 typedef void *(*TMALLOC)(size_t _size);
 typedef void (*TFREE)(void *p);
@@ -39,7 +40,7 @@ void initWatch()
 {
     Hook::WatchStart = true;
 }
-
+/*
 int printf(const char *fmt, ...)
 {
     // パラメータパックを ... で展開して、
@@ -54,7 +55,7 @@ int printf(const char *fmt, ...)
     va_end(ap);
     return ret;
 };
-
+*/
 /*extern "C"
 {
     void *malloc(size_t __size) noexcept;
@@ -78,14 +79,10 @@ void free(void *p) noexcept
 }
 */
 
-void *(*NewFunc)(size_t) = operator new;
-void *(*NewArrFunc)(size_t) = operator new[];
-
 void *operator new(size_t n)
 {
     Dl_info info;
     dladdr(__builtin_return_address(0), &info);
-    // dladdr((void *)NewFunc, &info);
     void *p = malloc(n);
 
     printf("[%s]hook new operator alloc size :%lu[%p]\n", info.dli_sname, n, p);
@@ -95,11 +92,9 @@ void *operator new(size_t n)
 void *operator new[](size_t n)
 {
     Dl_info info;
-    Dl_info info2;
     dladdr(__builtin_return_address(0), &info);
-    dladdr((void *)NewFunc, &info2);
     void *p = malloc(n);
-    printf("[%s][%s]hook new operator[] alloc size :%lu[%p]\n", info.dli_sname, info2.dli_sname, n, p);
+    printf("[%s]hook new operator[] alloc size :%lu[%p]\n", info.dli_sname, n, p);
     MemManage::_pManager.addMap(p, info.dli_sname);
     return p;
 }
@@ -107,7 +102,7 @@ void operator delete(void *p)
 {
     Dl_info info;
     dladdr(__builtin_return_address(0), &info);
-    printf("[%s]hook delete operator : [%p]\n", info.dli_sname, p);
+    printf("[%s]hook delete operator : [%p](%s)\n", info.dli_sname, p, ValidateAddr(p) ? "validate" : "Invalid");
     MemManage::_pManager.removeMap(p);
     free(p);
 }

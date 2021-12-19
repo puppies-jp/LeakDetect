@@ -14,6 +14,7 @@ int main()
     char *str = new char[12];
     int *j = new int{0};
     test *tmp = new test();
+    delete tmp;
     printf("finish main function---------------\n");
     return 0;
 }

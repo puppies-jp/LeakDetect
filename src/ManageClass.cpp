@@ -30,7 +30,6 @@ namespace MemManage
 
         for (const auto &[key, value] : dictionary)
         {
-
             printf("Don`t released [%p]%s (%s)\n", key, value, ValidateAddr(key) ? "Validate" : "Invalid");
         }
     };
