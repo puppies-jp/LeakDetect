@@ -16,7 +16,7 @@ class test
 {
 public:
     int *t;
-    test()
+    test(int x)
     {
         printf("test class constructor\n");
         t = new int[2]{1, 2};
@@ -34,7 +34,7 @@ int main()
     int *i = new int[6]{1, 2, 3, 4, 5, 6};
     char *str = new char[12];
     int *j = new int(0);
-    test *tmp = new test();
+    test *tmp = new test(1);
 
     /* file open hook  */
     FILE *fp;

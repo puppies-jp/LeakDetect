@@ -19,10 +19,12 @@ const static TPRINTF ORG_PRINTF = (TPRINTF)dlsym(RTLD_NEXT, "printf");
 const static TOPEN ORG_OPEN = (TOPEN)dlsym(RTLD_NEXT, "fopen");
 const static TFCLOSE ORG_CLOSE = (TFCLOSE)dlsym(RTLD_NEXT, "fclose");
 
+/* allocateしたアドレスを保存する構造体 */
 typedef struct mapedUnit
 {
-    void *allocedPtr;
-    void *returnAddress;
+    uint index;          /* 採番 */
+    void *allocedPtr;    /* allocated pointor */
+    void *returnAddress; /* return Addr */
 } mapedUnit;
 
 const char *ConvRetAddrToDmglFuncName(void *returnAddress);
@@ -56,6 +58,8 @@ namespace MemManage
         ~pManager();
         mapedUnit *ptr;
         int counter = 0;
+        uint index = 0;
+        int mapSize = sizeof(mapedUnit) * 255;
     };
     pManager _pManager;
 }

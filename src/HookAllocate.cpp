@@ -14,7 +14,7 @@ FILE *fopen(const char *str, const char *mode)
 
 int fclose(FILE *fp)
 {
-    printf("[hooked] fclose (%d)\n", fp);
+    printf("[hooked] fclose (%p)\n", fp);
     return ORG_CLOSE(fp);
 }
 
@@ -103,24 +103,45 @@ void MemManage::pManager::addMap(void *p, void *retAddr)
     // void *(*NewFunc)(size_t) = operator new;
 
     mapedUnit *arr = ptr + counter;
-    mapedUnit tmp = {p, retAddr};
+    mapedUnit tmp = {index, p, retAddr};
     memcpy(arr, &tmp, sizeof(mapedUnit));
     counter++;
+    index++;
+    if (counter > mapSize)
+    {
+        mapSize += mapSize;
+        mapedUnit *pTmp = (mapedUnit *)realloc(ptr, mapSize);
+
+        if (pTmp == nullptr)
+        {
+            exit(1);
+        }
+        else if (ptr != pTmp)
+        {
+            free(ptr);
+            ptr = pTmp;
+        }
+    }
 };
 
 void MemManage::pManager::removeMap(void *p)
 {
+    mapedUnit *endPtr = ptr + counter;
     for (int i = counter; i > 0; i--)
     {
         mapedUnit *arr = ptr + i;
+
+        //　受け取ったポインタが格納したポインタと同じだった場合
         if (arr->allocedPtr == p)
         {
-            printf("🌟detect alloced pointor\n");
-            memset(arr, 0x00, sizeof(mapedUnit));
-        }
-        else
-        {
-            // nop
+            // 末尾のアドレスと同じじゃない場合、末尾の中身で書き換える
+            if (endPtr != arr)
+            {
+                memcpy(arr, endPtr, sizeof(mapedUnit));
+            }
+            // 末尾の構造体を空にする
+            memset(endPtr, 0x00, sizeof(mapedUnit));
+            counter--;
         }
     }
 };
@@ -128,8 +149,8 @@ void MemManage::pManager::removeMap(void *p)
 MemManage::pManager::pManager()
 {
     counter = 0;
-    ptr = (mapedUnit *)malloc(sizeof(mapedUnit) * 255);
-    memset(ptr, 0x00, sizeof(sizeof(mapedUnit) * 255));
+    ptr = (mapedUnit *)malloc(mapSize);
+    memset(ptr, 0x00, mapSize);
     puts("[start]Memory management------------");
 }
 
@@ -144,15 +165,18 @@ MemManage::pManager::~pManager()
     for (int i = 0; i < counter; i++)
     {
         mapedUnit *arr = ptr + i;
+
+        // 空だった場合、continueする
         if (!memcmp(arr, &tmp, sizeof(mapedUnit)))
         {
             continue;
         }
 
-        printf("[%p](%s) %p\n",
-               arr->allocedPtr,
+        printf("[index: %4d][%s (%p)](%p)\n",
+               arr->index,
                ConvRetAddrToDmglFuncName(arr->returnAddress),
-               arr->returnAddress);
+               arr->returnAddress,
+               arr->allocedPtr);
         free(arr->allocedPtr);
     }
     free(ptr);
