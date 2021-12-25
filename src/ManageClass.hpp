@@ -1,10 +1,9 @@
-#pragma once
-
-#ifndef MMANAGER
-#define MMANAGER
 
 #include <iostream>
 #include <map>
+
+#ifndef MMANAGER
+#define MMANAGER
 
 namespace MemManage
 {

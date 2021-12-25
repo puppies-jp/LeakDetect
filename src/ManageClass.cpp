@@ -1,6 +1,5 @@
 #include "ManageClass.hpp"
 #include "AddrConfilm.hpp"
-#include <cxxabi.h>
 
 /*
 g++ AddrConfilm.cpp -shared -o libAddr.so
@@ -31,6 +30,7 @@ namespace MemManage
         for (const auto &[key, value] : dictionary)
         {
             printf("Don`t released [%p]%s (%s)\n", key, value, ValidateAddr(key) ? "Validate" : "Invalid");
+            // printf("Don`t released [%p]%s \n", key, value);
         }
     };
 
