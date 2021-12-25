@@ -53,8 +53,7 @@ void free(void *p) noexcept
 }
 */
 
-void *
-operator new(size_t size)
+void *operator new(size_t size)
 {
     void *retAddr = __builtin_return_address(0);
     void *p = malloc(size);
@@ -177,7 +176,7 @@ MemManage::pManager::~pManager()
             continue;
         }
 
-        printf("[index: %4d][%s (%p)](%p)\n",
+        printf("[index: %4d][allocated:%s (%p)](%p)\n",
                arr->index,
                ConvRetAddrToDmglFuncName(arr->returnAddress),
                arr->returnAddress,
