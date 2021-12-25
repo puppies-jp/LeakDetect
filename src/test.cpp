@@ -50,7 +50,7 @@ int main()
     ofs << ">seq1" << std::endl;
     ofs.close();
 
-    delete tmp;
+    // delete tmp;
 
     printf("finish main function---------------\n");
     return 0;

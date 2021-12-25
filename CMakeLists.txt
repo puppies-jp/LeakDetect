@@ -10,7 +10,6 @@ add_definitions("-Wall -std=c++2a -fPIC -rdynamic -ldl")
 
 add_library(Manager SHARED 
 ./src/AddrConfilm.cpp
-./src/ManageClass.cpp
 )
 
 add_library(leakDetect SHARED 

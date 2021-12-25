@@ -3,7 +3,9 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
-#include "ManageClass.hpp"
+//#include "ManageClass.hpp"
+#include <iostream>
+
 #include "AddrConfilm.hpp"
 
 typedef void *(*TMALLOC)(size_t _size);
@@ -22,7 +24,7 @@ g++ -fPIC -shared ManageClass.cpp  -std=c++20 -o libManage.o
 g++ -fPIC -shared HookAllocate.cpp  libManage.o  -o hook.so -rdynamic -ldl -std=c++20
 */
 
-namespace
+namespace HOOK
 {
     struct _hook
     {
@@ -36,9 +38,30 @@ namespace
         }
     };
     _hook tmp;
-    bool WatchStart = false;
 
 };
+
+typedef struct mapedUnit
+{
+    void *allocedPtr;
+    void *returnAddress;
+} mapedUnit;
+
+namespace MemManage
+{
+
+    class pManager
+    {
+    public:
+        void addMap(void *p, void *retAddr);
+        void removeMap(void *p);
+        pManager();
+        ~pManager();
+        mapedUnit *ptr;
+        int counter = 0;
+    };
+    pManager _pManager;
+}
 
 FILE *fopen(const char *str, const char *mode)
 {
@@ -94,20 +117,22 @@ void *
 operator new(size_t n)
 {
     Dl_info info;
-    dladdr(__builtin_return_address(0), &info);
+    void *retAddr = __builtin_return_address(0);
+    dladdr(retAddr, &info);
     void *p = malloc(n);
 
     printf("[%s]hook new operator alloc size :%lu[%p]\n", info.dli_sname, n, p);
-    // MemManage::_pManager.addMap(p, info.dli_sname);
+    MemManage::_pManager.addMap(p, retAddr);
     return p;
 }
 void *operator new[](size_t n)
 {
+    void *retAddr = __builtin_return_address(0);
     Dl_info info;
-    dladdr(__builtin_return_address(0), &info);
+    dladdr(retAddr, &info);
     void *p = malloc(n);
     printf("[%s]hook new operator[] alloc size :%lu[%p]\n", info.dli_sname, n, p);
-    MemManage::_pManager.addMap(p, info.dli_sname);
+    MemManage::_pManager.addMap(p, retAddr);
     return p;
 }
 void operator delete(void *p)
@@ -126,3 +151,61 @@ void operator delete[](void *p)
     MemManage::_pManager.removeMap(p);
     free(p);
 }
+
+void MemManage::pManager::addMap(void *p, void *retAddr)
+{
+    // void *(*NewFunc)(size_t) = operator new;
+
+    mapedUnit *arr = ptr + counter;
+    mapedUnit tmp = {p, retAddr};
+    memcpy(arr, &tmp, sizeof(mapedUnit));
+    counter++;
+};
+
+void MemManage::pManager::removeMap(void *p)
+{
+    for (int i = counter; i > 0; i--)
+    {
+        mapedUnit *arr = ptr + i;
+        if (arr->allocedPtr == p)
+        {
+            printf("🌟detect alloced pointor\n");
+            memset(arr, 0x00, sizeof(mapedUnit));
+        }
+        else
+        {
+            // nop
+        }
+    }
+};
+
+MemManage::pManager::pManager()
+{
+    counter = 0;
+    ptr = (mapedUnit *)malloc(sizeof(mapedUnit) * 255);
+    memset(ptr, 0x00, sizeof(sizeof(mapedUnit) * 255));
+    puts("[start]Memory management------------");
+}
+
+MemManage::pManager::~pManager()
+{
+
+    puts("[end]Memory management------------\nthese pointor is leaked");
+
+    mapedUnit tmp;
+    memset(&tmp, 0x00, sizeof(mapedUnit));
+
+    for (int i = 0; i < counter; i++)
+    {
+        mapedUnit *arr = ptr + i;
+        if (!memcmp(arr, &tmp, sizeof(mapedUnit)))
+        {
+            continue;
+        }
+        Dl_info info;
+        dladdr(arr->returnAddress, &info);
+        printf("[%p](%s) %p\n", arr->allocedPtr, info.dli_sname, arr->returnAddress);
+        free(arr->allocedPtr);
+    }
+    free(ptr);
+};
