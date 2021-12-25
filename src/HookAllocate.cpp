@@ -2,7 +2,6 @@
 #include "AddrConfilm.hpp"
 
 /*
-g++ -fPIC -shared ManageClass.cpp  -std=c++20 -o libManage.o
 g++ -fPIC -shared HookAllocate.cpp  libManage.o  -o hook.so -rdynamic -ldl -std=c++20
 */
 
@@ -20,8 +19,6 @@ int fclose(FILE *fp)
 
 int printf(const char *fmt, ...)
 {
-    // パラメータパックを ... で展開して、
-    // 関数g()の引数として渡す
     ORG_PRINTF("[HookLibs]:");
 
     va_list ap;
@@ -57,44 +54,47 @@ void free(void *p) noexcept
 */
 
 void *
-operator new(size_t n)
+operator new(size_t size)
 {
     void *retAddr = __builtin_return_address(0);
-    void *p = malloc(n);
+    void *p = malloc(size);
 
-    printf("[%s]hook new operator alloc size :%lu[%p]\n",
+    printf("[new   (size:%4lu)][called: %s]:[%p]\n",
+           size,
            ConvRetAddrToDmglFuncName(retAddr),
-           n, p);
+           p);
     MemManage::_pManager.addMap(p, retAddr);
     return p;
 }
-void *operator new[](size_t n)
+void *operator new[](size_t size)
 {
     void *retAddr = __builtin_return_address(0);
-    void *p = malloc(n);
-    printf("[%s]hook new operator[] alloc size :%lu[%p]\n",
+    void *p = malloc(size);
+    printf("[new[] (size:%4lu)][called: %s]:[%p]\n",
+           size,
            ConvRetAddrToDmglFuncName(retAddr),
-           n, p);
+           p);
     MemManage::_pManager.addMap(p, retAddr);
     return p;
 }
 void operator delete(void *p)
 {
     void *retAddr = __builtin_return_address(0);
-    printf("[%s]hook delete operator : [%p](%s)\n",
+    char *allocedFunc = MemManage::_pManager.removeMap(p);
+    printf("[delete  ][called: %s]: [%p](allocated: %s)\n",
            ConvRetAddrToDmglFuncName(retAddr),
            p,
-           ValidateAddr(p) ? "validate" : "Invalid");
-    MemManage::_pManager.removeMap(p);
+           allocedFunc);
     free(p);
 }
 void operator delete[](void *p)
 {
     void *retAddr = __builtin_return_address(0);
-    printf("[%s]hook delete[] operator : [%p]\n",
+    char *allocedFunc = MemManage::_pManager.removeMap(p);
+    printf("[delete[]][called: %s]: [%p](allocated: %s)\n",
            ConvRetAddrToDmglFuncName(retAddr),
-           p);
-    MemManage::_pManager.removeMap(p);
+           p,
+           allocedFunc);
     free(p);
 }
 
@@ -124,9 +124,10 @@ void MemManage::pManager::addMap(void *p, void *retAddr)
     }
 };
 
-void MemManage::pManager::removeMap(void *p)
+char *MemManage::pManager::removeMap(void *p)
 {
     mapedUnit *endPtr = ptr + counter;
+    char *str = (char *)"this pointor not found";
     for (int i = counter; i > 0; i--)
     {
         mapedUnit *arr = ptr + i;
@@ -134,6 +135,7 @@ void MemManage::pManager::removeMap(void *p)
         //　受け取ったポインタが格納したポインタと同じだった場合
         if (arr->allocedPtr == p)
         {
+            str = (char *)ConvRetAddrToDmglFuncName(arr->returnAddress);
             // 末尾のアドレスと同じじゃない場合、末尾の中身で書き換える
             if (endPtr != arr)
             {
@@ -142,8 +144,10 @@ void MemManage::pManager::removeMap(void *p)
             // 末尾の構造体を空にする
             memset(endPtr, 0x00, sizeof(mapedUnit));
             counter--;
+            break;
         }
     }
+    return str;
 };
 
 MemManage::pManager::pManager()
@@ -157,7 +161,8 @@ MemManage::pManager::pManager()
 MemManage::pManager::~pManager()
 {
 
-    puts("[end]Memory management------------\nthese pointor is leaked");
+    printf("[end]Memory management------------\n"
+           "🌟these pointor is leaked\n");
 
     mapedUnit tmp;
     memset(&tmp, 0x00, sizeof(mapedUnit));
@@ -177,8 +182,11 @@ MemManage::pManager::~pManager()
                ConvRetAddrToDmglFuncName(arr->returnAddress),
                arr->returnAddress,
                arr->allocedPtr);
+
+        // 一応、freeしておく
         free(arr->allocedPtr);
     }
+    printf("-----------------\n");
     free(ptr);
 };
 

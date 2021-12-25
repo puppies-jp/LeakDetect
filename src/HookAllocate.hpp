@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <cxxabi.h>
 
-//#include "ManageClass.hpp"
 #include <iostream>
 
 typedef void *(*TMALLOC)(size_t _size);
@@ -53,7 +52,7 @@ namespace MemManage
     {
     public:
         void addMap(void *p, void *retAddr);
-        void removeMap(void *p);
+        char *removeMap(void *p);
         pManager();
         ~pManager();
         mapedUnit *ptr;
