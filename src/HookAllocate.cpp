@@ -1,67 +1,10 @@
-#include <dlfcn.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <stdlib.h>
-
-//#include "ManageClass.hpp"
-#include <iostream>
-
+#include "HookAllocate.hpp"
 #include "AddrConfilm.hpp"
 
-typedef void *(*TMALLOC)(size_t _size);
-typedef void (*TFREE)(void *p);
-typedef int (*TPRINTF)(const char *, ...);
-typedef FILE *(*TOPEN)(const char *, const char *);
-typedef int (*TFCLOSE)(FILE *);
-
-const static TMALLOC ORG_MALLOC = (TMALLOC)dlsym(RTLD_NEXT, "malloc");
-const static TFREE ORG_FREE = (TFREE)dlsym(RTLD_NEXT, "free");
-const static TPRINTF ORG_PRINTF = (TPRINTF)dlsym(RTLD_NEXT, "printf");
-const static TOPEN ORG_OPEN = (TOPEN)dlsym(RTLD_NEXT, "fopen");
-const static TFCLOSE ORG_CLOSE = (TFCLOSE)dlsym(RTLD_NEXT, "fclose");
 /*
 g++ -fPIC -shared ManageClass.cpp  -std=c++20 -o libManage.o
 g++ -fPIC -shared HookAllocate.cpp  libManage.o  -o hook.so -rdynamic -ldl -std=c++20
 */
-
-namespace HOOK
-{
-    struct _hook
-    {
-        _hook()
-        {
-            printf("Start Hook Lib--------------\n");
-        }
-        ~_hook()
-        {
-            printf("Finish Hook Lib-------------\n");
-        }
-    };
-    _hook tmp;
-
-};
-
-typedef struct mapedUnit
-{
-    void *allocedPtr;
-    void *returnAddress;
-} mapedUnit;
-
-namespace MemManage
-{
-
-    class pManager
-    {
-    public:
-        void addMap(void *p, void *retAddr);
-        void removeMap(void *p);
-        pManager();
-        ~pManager();
-        mapedUnit *ptr;
-        int counter = 0;
-    };
-    pManager _pManager;
-}
 
 FILE *fopen(const char *str, const char *mode)
 {
@@ -116,38 +59,41 @@ void free(void *p) noexcept
 void *
 operator new(size_t n)
 {
-    Dl_info info;
     void *retAddr = __builtin_return_address(0);
-    dladdr(retAddr, &info);
     void *p = malloc(n);
 
-    printf("[%s]hook new operator alloc size :%lu[%p]\n", info.dli_sname, n, p);
+    printf("[%s]hook new operator alloc size :%lu[%p]\n",
+           ConvRetAddrToDmglFuncName(retAddr),
+           n, p);
     MemManage::_pManager.addMap(p, retAddr);
     return p;
 }
 void *operator new[](size_t n)
 {
     void *retAddr = __builtin_return_address(0);
-    Dl_info info;
-    dladdr(retAddr, &info);
     void *p = malloc(n);
-    printf("[%s]hook new operator[] alloc size :%lu[%p]\n", info.dli_sname, n, p);
+    printf("[%s]hook new operator[] alloc size :%lu[%p]\n",
+           ConvRetAddrToDmglFuncName(retAddr),
+           n, p);
     MemManage::_pManager.addMap(p, retAddr);
     return p;
 }
 void operator delete(void *p)
 {
-    Dl_info info;
-    dladdr(__builtin_return_address(0), &info);
-    printf("[%s]hook delete operator : [%p](%s)\n", info.dli_sname, p, ValidateAddr(p) ? "validate" : "Invalid");
+    void *retAddr = __builtin_return_address(0);
+    printf("[%s]hook delete operator : [%p](%s)\n",
+           ConvRetAddrToDmglFuncName(retAddr),
+           p,
+           ValidateAddr(p) ? "validate" : "Invalid");
     MemManage::_pManager.removeMap(p);
     free(p);
 }
 void operator delete[](void *p)
 {
-    Dl_info info;
-    dladdr(__builtin_return_address(0), &info);
-    printf("[%s]hook delete[] operator : [%p]\n", info.dli_sname, p);
+    void *retAddr = __builtin_return_address(0);
+    printf("[%s]hook delete[] operator : [%p]\n",
+           ConvRetAddrToDmglFuncName(retAddr),
+           p);
     MemManage::_pManager.removeMap(p);
     free(p);
 }
@@ -202,10 +148,22 @@ MemManage::pManager::~pManager()
         {
             continue;
         }
-        Dl_info info;
-        dladdr(arr->returnAddress, &info);
-        printf("[%p](%s) %p\n", arr->allocedPtr, info.dli_sname, arr->returnAddress);
+
+        printf("[%p](%s) %p\n",
+               arr->allocedPtr,
+               ConvRetAddrToDmglFuncName(arr->returnAddress),
+               arr->returnAddress);
         free(arr->allocedPtr);
     }
     free(ptr);
 };
+
+const char *ConvRetAddrToDmglFuncName(void *returnAddress)
+{
+    Dl_info info;
+    dladdr(returnAddress, &info);
+    int status;
+    char *demangled = abi::__cxa_demangle(info.dli_sname, 0, 0, &status);
+
+    return (demangled == nullptr) ? "main()" : demangled;
+}

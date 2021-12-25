@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <cxxabi.h>
 
 //#include "ManageClass.hpp"
 #include <iostream>
@@ -23,6 +24,8 @@ typedef struct mapedUnit
     void *allocedPtr;
     void *returnAddress;
 } mapedUnit;
+
+const char *ConvRetAddrToDmglFuncName(void *returnAddress);
 
 namespace HOOK
 {

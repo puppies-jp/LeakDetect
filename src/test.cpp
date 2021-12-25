@@ -28,6 +28,13 @@ public:
     }
 };
 
+void addfunc()
+{
+    int *i = new int(3);
+    int *j = new int(5);
+    printf("%d + %d = %d", *i, *j, *i + *j);
+}
+
 int main()
 {
     printf("start main function---------------\n");
@@ -51,7 +58,7 @@ int main()
     ofs.close();
 
     // delete tmp;
-
+    addfunc();
     printf("finish main function---------------\n");
     return 0;
 }
