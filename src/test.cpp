@@ -3,6 +3,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fstream>
+#include <typeinfo>
+#include <tuple>
+#include <map>
+
+#define STRINGIFY(n) #n
+#define TOSTRING(n) STRINGIFY(n)
+#define PREFIX __FILE__ ":" TOSTRING(__LINE__) ": "
 
 /* テスト用クラス */
 class test
