@@ -3,7 +3,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <cxxabi.h>
-
+#include <cstring>
 #include <iostream>
 
 typedef void *(*TMALLOC)(size_t _size);

@@ -125,9 +125,9 @@ void MemManage::pManager::addMap(void *p, void *retAddr)
 
 char *MemManage::pManager::removeMap(void *p)
 {
-    mapedUnit *endPtr = ptr + counter;
+    mapedUnit *endPtr = ptr + (counter - 1);
     char *str = (char *)"this pointor not found";
-    for (int i = counter; 0 <= i; i--)
+    for (int i = counter - 1; 0 <= i; i--)
     {
         mapedUnit *arr = ptr + i;
 
