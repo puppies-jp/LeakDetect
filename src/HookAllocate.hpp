@@ -55,6 +55,8 @@ namespace MemManage
         char *removeMap(void *p);
         pManager();
         ~pManager();
+
+    private:
         mapedUnit *ptr;
         int counter = 0;
         uint index = 0;

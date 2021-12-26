@@ -127,7 +127,7 @@ char *MemManage::pManager::removeMap(void *p)
 {
     mapedUnit *endPtr = ptr + counter;
     char *str = (char *)"this pointor not found";
-    for (int i = counter; i > 0; i--)
+    for (int i = counter; 0 <= i; i--)
     {
         mapedUnit *arr = ptr + i;
 
@@ -154,7 +154,7 @@ MemManage::pManager::pManager()
     counter = 0;
     ptr = (mapedUnit *)malloc(mapSize);
     memset(ptr, 0x00, mapSize);
-    puts("[start]Memory management------------");
+    printf("[start]Memory management------------");
 }
 
 MemManage::pManager::~pManager()
@@ -196,5 +196,5 @@ const char *ConvRetAddrToDmglFuncName(void *returnAddress)
     int status;
     char *demangled = abi::__cxa_demangle(info.dli_sname, 0, 0, &status);
 
-    return (demangled == nullptr) ? "main()" : demangled;
+    return (demangled != nullptr) ? demangled : "main()";
 }
