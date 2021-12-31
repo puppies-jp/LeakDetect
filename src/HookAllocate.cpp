@@ -138,7 +138,7 @@ char *MemManage::pManager::removeMap(void *p)
             // 末尾のアドレスと同じじゃない場合、末尾の中身で書き換える
             if (endPtr != arr)
             {
-                memcpy(arr, endPtr, sizeof(mapedUnit));
+                memmove(arr, arr + 1, sizeof(mapedUnit) * (counter - 1 - i));
             }
             // 末尾の構造体を空にする
             memset(endPtr, 0x00, sizeof(mapedUnit));
