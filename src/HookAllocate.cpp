@@ -19,7 +19,7 @@ int fclose(FILE *fp)
 
 int printf(const char *fmt, ...)
 {
-    ORG_PRINTF("[HookLibs]:");
+    // ORG_PRINTF("[HookLibs]:");
 
     va_list ap;
     // 可変長引数を１個の変数にまとめる
@@ -154,7 +154,7 @@ MemManage::pManager::pManager()
     counter = 0;
     ptr = (mapedUnit *)malloc(mapSize);
     memset(ptr, 0x00, mapSize);
-    printf("[start]Memory management------------");
+    printf("[start]Memory management------------\n");
 }
 
 MemManage::pManager::~pManager()

@@ -11,6 +11,21 @@
 #define TOSTRING(n) STRINGIFY(n)
 #define PREFIX __FILE__ ":" TOSTRING(__LINE__) ": "
 
+typedef struct Mstruct
+{
+    Mstruct(char *str)
+    {
+        printf("%s namespace\n", str);
+    }
+} Mstruct;
+
+Mstruct tmp("global");
+
+namespace
+{
+    Mstruct tmp("no name");
+}
+
 /* テスト用クラス */
 class test
 {
