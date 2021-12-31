@@ -1,5 +1,6 @@
 #include "HookAllocate.hpp"
 #include "AddrConfilm.hpp"
+#include "RAIILockClass.hpp"
 
 /*
 g++ -fPIC -shared HookAllocate.cpp  libManage.o  -o hook.so -rdynamic -ldl -std=c++20
@@ -100,6 +101,7 @@ void operator delete[](void *p)
 void MemManage::pManager::addMap(void *p, void *retAddr)
 {
     // void *(*NewFunc)(size_t) = operator new;
+    static_mutex::scoped_lock lk(::m);
 
     mapedUnit *arr = ptr + counter;
     mapedUnit tmp = {index, p, retAddr};
@@ -125,6 +127,7 @@ void MemManage::pManager::addMap(void *p, void *retAddr)
 
 char *MemManage::pManager::removeMap(void *p)
 {
+    static_mutex::scoped_lock lk(::m);
     mapedUnit *endPtr = ptr + (counter - 1);
     char *str = (char *)"this pointor not found";
     for (int i = counter - 1; 0 <= i; i--)
@@ -154,7 +157,7 @@ MemManage::pManager::pManager()
     counter = 0;
     ptr = (mapedUnit *)malloc(mapSize);
     memset(ptr, 0x00, mapSize);
-    printf("[start]Memory management------------");
+    printf("[start]Memory management------------\n");
 }
 
 MemManage::pManager::~pManager()

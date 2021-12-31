@@ -21,6 +21,7 @@ target_link_libraries(
 )
 
 add_executable(main.out ./src/test.cpp)
+#target_link_libraries(main.out leakDetect)
 
 message("[cmake end]----------------------------------------")
 
