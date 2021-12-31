@@ -100,8 +100,7 @@ void operator delete[](void *p)
 
 void MemManage::pManager::addMap(void *p, void *retAddr)
 {
-    // void *(*NewFunc)(size_t) = operator new;
-    static_mutex::scoped_lock lk(::m);
+    static_mutex::scoped_lock lk(m);
 
     mapedUnit *arr = ptr + counter;
     mapedUnit tmp = {index, p, retAddr};
@@ -127,7 +126,8 @@ void MemManage::pManager::addMap(void *p, void *retAddr)
 
 char *MemManage::pManager::removeMap(void *p)
 {
-    static_mutex::scoped_lock lk(::m);
+    static_mutex::scoped_lock lk(m);
+
     mapedUnit *endPtr = ptr + (counter - 1);
     char *str = (char *)"this pointor not found";
     for (int i = counter - 1; 0 <= i; i--)
@@ -166,6 +166,16 @@ MemManage::pManager::~pManager()
     printf("[end]Memory management------------\n"
            "🌟these pointor is leaked\n");
 
+    displayAllcMap(true);
+
+    printf("-----------------------------------\n");
+    free(ptr);
+};
+
+void MemManage::pManager::displayAllcMap(bool isExecFlee)
+{
+    static_mutex::scoped_lock lk(m);
+
     mapedUnit tmp;
     memset(&tmp, 0x00, sizeof(mapedUnit));
 
@@ -186,11 +196,12 @@ MemManage::pManager::~pManager()
                arr->allocedPtr);
 
         // 一応、freeしておく
-        free(arr->allocedPtr);
+        if (isExecFlee)
+        {
+            free(arr->allocedPtr);
+        }
     }
-    printf("-----------------\n");
-    free(ptr);
-};
+}
 
 const char *ConvRetAddrToDmglFuncName(void *returnAddress)
 {

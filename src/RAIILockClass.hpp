@@ -25,7 +25,6 @@ private:
 struct static_mutex
 {
     pthread_mutex_t m_;
-    std::mutex g_i_mutex;
     void lock() { pthread_mutex_lock(&m_); }
     void unlock() { pthread_mutex_unlock(&m_); }
     typedef scoped_lock_<static_mutex> scoped_lock;
@@ -33,7 +32,7 @@ struct static_mutex
 
 namespace
 {
-    static_mutex m;
+    static_mutex m = {PTHREAD_MUTEX_INITIALIZER};
 }
 
 /* how to use lock */

@@ -53,6 +53,7 @@ namespace MemManage
     public:
         void addMap(void *p, void *retAddr);
         char *removeMap(void *p);
+        void displayAllcMap(bool isExecFlee = false);
         pManager();
         ~pManager();
 
