@@ -21,7 +21,7 @@ const static TFCLOSE ORG_CLOSE = (TFCLOSE)dlsym(RTLD_NEXT, "fclose");
 /* allocateしたアドレスを保存する構造体 */
 typedef struct mapedUnit
 {
-    uint index;          /* 採番 */
+    unsigned int index;  /* 採番 */
     void *allocedPtr;    /* allocated pointor */
     void *returnAddress; /* return Addr */
 } mapedUnit;
@@ -60,7 +60,7 @@ namespace MemManage
     private:
         mapedUnit *ptr;
         int counter = 0;
-        uint index = 0;
+        unsigned int index = 0;
         int mapSize = sizeof(mapedUnit) * 255;
     };
     pManager _pManager;

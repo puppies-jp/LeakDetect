@@ -33,7 +33,7 @@ void vuln(const char *line)
 
     strcpy(msg, line);
 
-    stack_dump(&mark2, 13);
+    stack_dump(&mark2, 16);
 
     printf("INPUT[%s]\n", msg);
 }
@@ -44,6 +44,14 @@ void stack_dump(void *ptr, int counts)
     unsigned long *ulong_ptr = (unsigned long *)ptr;
     unsigned char uchar_buf[4];
 
+    unsigned long delta = (unsigned long)hello - 0x100003dd0;
+    void *retAddr = __builtin_return_address(0);
+    printf("Return Addr (%p) -> hello(%p),hello diff(%08lx),main(%08lx)\n",
+           retAddr,
+           hello,
+           delta,
+           (unsigned long)main - delta);
+    // memcpy((uchar_buf - sizeof(void *)), (void *)hello, sizeof(void *));
     printf("-----------------------------------------\n");
     printf(" address | long var | +0 +1 +2 +3 | 0123\n");
     printf("-----------------------------------------\n");

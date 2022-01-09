@@ -6,6 +6,7 @@
 #include <typeinfo>
 #include <tuple>
 #include <map>
+#include <thread>
 
 #define STRINGIFY(n) #n
 #define TOSTRING(n) STRINGIFY(n)
@@ -27,6 +28,17 @@ public:
         delete[] t;
     }
 };
+
+void safe_increment()
+{
+    test *tmp = new test(2);
+}
+
+void safe_increment2()
+{
+    test *tmp = new test(4);
+    delete tmp;
+}
 
 int main()
 {
@@ -52,6 +64,14 @@ int main()
 
     // delete str;
 
+    std::thread t1(safe_increment);
+    std::thread t2(safe_increment2);
+    std::thread t3(safe_increment);
+    std::thread t4(safe_increment);
     printf("finish main function---------------\n");
+    t1.join();
+    t2.join();
+    t3.join();
+    t4.join();
     return 0;
 }

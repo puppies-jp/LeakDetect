@@ -2,8 +2,11 @@
 #include "AddrConfilm.hpp"
 #include "RAIILockClass.hpp"
 
+#include <thread>
 /*
-g++ -fPIC -shared HookAllocate.cpp  libManage.o  -o hook.so -rdynamic -ldl -std=c++20
+# build cmd for Ubuntu
+g++ -fPIC -shared ../src/HookAllocate.cpp -o hook.so -rdynamic -ldl -std=c++2a
+g++ ../src/test.cpp -rdynamic -ldl -lpthread -std=c++2a main.out
 */
 
 FILE *fopen(const char *str, const char *mode)
@@ -164,8 +167,10 @@ MemManage::pManager::~pManager()
 {
 
     printf("[end]Memory management------------\n"
-           "🌟these pointor is leaked\n");
+           "🌟these pointor is leaked [thread] %d\n",
+           std::thread::hardware_concurrency());
 
+    /* std::thread::hardware_concurrency()  */
     displayAllcMap(true);
 
     printf("-----------------------------------\n");

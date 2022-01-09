@@ -5,6 +5,11 @@ project(test_cmake CXX)
 
 message("[cmake start]--------------------------------------")
 # option追加
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+# find_library(dl dlsym /usr/lib/x86_64-linux-gnu/libdl.so)
+# find_package(dl)
+
 add_definitions("-Wall -std=c++2a -fPIC -rdynamic -ldl")
 
 
@@ -20,8 +25,10 @@ target_link_libraries(
     leakDetect Manager
 )
 
-add_executable(main.out ./src/test.cpp)
-#target_link_libraries(main.out leakDetect)
+add_executable(main.out ./src/test.cpp )
+target_link_libraries(main.out PRIVATE Threads::Threads ${CMAKE_DL_LIBS} 
+# ${dl}
+)
 
 message("[cmake end]----------------------------------------")
 

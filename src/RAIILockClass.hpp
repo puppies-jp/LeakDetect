@@ -8,14 +8,8 @@ class scoped_lock_
     T &m_;
 
 public:
-    explicit scoped_lock_(T &m) : m_(m)
-    {
-        m.lock();
-    };
-    ~scoped_lock_()
-    {
-        m_.unlock();
-    };
+    explicit scoped_lock_(T &m) : m_(m) { m.lock(); };
+    ~scoped_lock_() { m_.unlock(); };
 
 private:
     void operator=(const scoped_lock_ &src) {}
