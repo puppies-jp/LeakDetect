@@ -1,6 +1,6 @@
 *.so
 *.o
 *.out
-
+*.dSYM/
 build*/
 
