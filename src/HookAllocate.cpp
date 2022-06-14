@@ -5,19 +5,31 @@
 #include <thread>
 /*
 # build cmd for Ubuntu
-g++ -fPIC -shared ../src/HookAllocate.cpp -o hook.so -rdynamic -ldl -std=c++2a
+g++ -fPIC -shared ../src/HookAllocate.cpp -o hook.so -rdynamic -ldl -std=c++2a -DLeak -DIOHook
 g++ ../src/test.cpp -rdynamic -ldl -lpthread -std=c++2a main.out
 */
 
+#ifdef Leak
+#define LeakPrint(...) printf(__VA_ARGS__)
+#else
+#define LeakPrint(...)
+#endif
+
+#ifdef IOHook
+#define IOPrint(...) printf(__VA_ARGS__)
+#else
+#define IOPrint(...)
+#endif
+
 FILE *fopen(const char *str, const char *mode)
 {
-    printf("[hooked fopen(%p)]%s %s\n", ORG_OPEN, str, mode);
+    IOPrint("[hooked fopen(%p)]%s %s\n", ORG_OPEN, str, mode);
     return ORG_OPEN(str, mode);
 }
 
 int fclose(FILE *fp)
 {
-    printf("[hooked] fclose (%p)\n", fp);
+    IOPrint("[hooked] fclose (%p)\n", fp);
     return ORG_CLOSE(fp);
 }
 
@@ -62,10 +74,10 @@ void *operator new(size_t size)
     void *retAddr = __builtin_return_address(0);
     void *p = malloc(size);
 
-    printf("[new   (size:%4lu)][called: %s]:[%p]\n",
-           size,
-           ConvRetAddrToDmglFuncName(retAddr),
-           p);
+    LeakPrint("[new   (size:%4lu)][called: %s]:[%p]\n",
+              size,
+              ConvRetAddrToDmglFuncName(retAddr),
+              p);
     MemManage::_pManager.addMap(p, retAddr);
     return p;
 }
@@ -73,10 +85,10 @@ void *operator new[](size_t size)
 {
     void *retAddr = __builtin_return_address(0);
     void *p = malloc(size);
-    printf("[new[] (size:%4lu)][called: %s]:[%p]\n",
-           size,
-           ConvRetAddrToDmglFuncName(retAddr),
-           p);
+    LeakPrint("[new[] (size:%4lu)][called: %s]:[%p]\n",
+              size,
+              ConvRetAddrToDmglFuncName(retAddr),
+              p);
     MemManage::_pManager.addMap(p, retAddr);
     return p;
 }
@@ -84,20 +96,19 @@ void operator delete(void *p)
 {
     void *retAddr = __builtin_return_address(0);
     char *allocedFunc = MemManage::_pManager.removeMap(p);
-    printf("[delete  ][called: %s]: [%p](allocated: %s)\n",
-           ConvRetAddrToDmglFuncName(retAddr),
-           p,
-           allocedFunc);
+    LeakPrint("[delete  ][called: %s]: [%p](allocated: %s)\n",
+              ConvRetAddrToDmglFuncName(retAddr), p,
+              allocedFunc);
     free(p);
 }
 void operator delete[](void *p)
 {
     void *retAddr = __builtin_return_address(0);
     char *allocedFunc = MemManage::_pManager.removeMap(p);
-    printf("[delete[]][called: %s]: [%p](allocated: %s)\n",
-           ConvRetAddrToDmglFuncName(retAddr),
-           p,
-           allocedFunc);
+    LeakPrint("[delete[]][called: %s]: [%p](allocated: %s)\n",
+              ConvRetAddrToDmglFuncName(retAddr),
+              p,
+              allocedFunc);
     free(p);
 }
 

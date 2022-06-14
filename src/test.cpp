@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdarg.h>
 #include <iostream>
 #include <stdlib.h>
 #include <string.h>
@@ -11,6 +12,25 @@
 #define STRINGIFY(n) #n
 #define TOSTRING(n) STRINGIFY(n)
 #define PREFIX __FILE__ ":" TOSTRING(__LINE__) ": "
+
+/*
+#include <dlfcn.h>
+typedef int (*TPRINTF)(const char *, ...);
+const static TPRINTF ORG_PRINTF = (TPRINTF)dlsym(RTLD_NEXT, "printf");
+
+int printf(const char *fmt, ...)
+{
+    ORG_PRINTF(PREFIX);
+
+    va_list ap;
+    // 可変長引数を１個の変数にまとめる
+    va_start(ap, fmt);
+    // まとめられた変数で処理する
+    int ret = vprintf(fmt, ap);
+    va_end(ap);
+    return ret;
+};
+*/
 
 /* テスト用クラス */
 class test
