@@ -1,6 +1,5 @@
-*.so
-*.o
-*.out
+*.(out|o|so|a)
 *.dSYM/
 build*/
 
+!*.*
