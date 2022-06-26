@@ -1,7 +1,9 @@
 #include "Turtle.h"
-#include "gmock/gmock.h"  // Google Mock はこのヘッダに．
-class MockTurtle : public Turtle {
- public:
+#include "gmock/gmock.h" // Google Mock はこのヘッダに．
+
+class MockTurtle : public Turtle
+{
+public:
   MOCK_METHOD0(PenUp, void());
   MOCK_METHOD0(PenDown, void());
   MOCK_METHOD1(Forward, void(int distance));
