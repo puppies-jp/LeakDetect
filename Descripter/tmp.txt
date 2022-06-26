@@ -1,0 +1,8 @@
+[socket:3]This string will be printed in tmp.txt file
+[socket:3]This string will be printed in tmp.txt file
+[socket:3]This string will be printed in tmp.txt file
+[socket:3(fd=3)]This string will be printed in tmp.txt file
+[socket:3]This string will be printed in tmp.txt file
+[socket:3(fd=3)]This string will be printed in tmp.txt file
+[socket:4]This string will be printed in tmp.txt file
+[socket:3(fd=3)]This string will be printed in tmp.txt file
